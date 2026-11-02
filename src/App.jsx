@@ -11,6 +11,8 @@ function App() {
   const [answers, setAnswers] = useState(['', '', ''])
   const [stage, setStage] = useState('new')
   const [error, setError] = useState('')
+  const [showReceive, setShowReceive] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   function createWallet() {
     try {
@@ -49,6 +51,16 @@ function App() {
       setError('')
     } else {
       setError('So‘zlar mos kelmadi. Qog‘ozdagi yozuvni tekshiring.')
+    }
+  }
+
+  async function copyAddress() {
+    try {
+      await navigator.clipboard.writeText(wallet.address)
+      setCopied(true)
+      setError('')
+    } catch {
+      setError('Nusxalash ishlamadi. Manzilni bosib ushlab nusxalang.')
     }
   }
 
@@ -113,7 +125,28 @@ function App() {
           <h2>Hamyon tasdiqlandi!</h2>
           <p>TRON manzilingiz:</p>
           <p className="address">{wallet.address}</p>
-          <p className="notice">Bu testnet prototipi. Haqiqiy pul yubormang.</p>
+          <button onClick={() => {
+            setShowReceive(!showReceive)
+            setCopied(false)
+          }}>
+            {showReceive ? 'Yopish' : 'Receive / Qabul qilish'}
+          </button>
+
+          {showReceive && (
+            <div className="asset">
+              <div>
+                <strong>TRON manzili</strong>
+                <p className="address">{wallet.address}</p>
+                <button onClick={copyAddress}>Nusxalash</button>
+                {copied && <p>Nusxalandi!</p>}
+                {error && <p>{error}</p>}
+              </div>
+            </div>
+          )}
+
+          <p className="notice">
+            Bu testnet prototipi. Haqiqiy pul yubormang.
+          </p>
         </section>
       )}
     </main>
