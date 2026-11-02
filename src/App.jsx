@@ -13,6 +13,9 @@ function App() {
   const [error, setError] = useState('')
   const [showReceive, setShowReceive] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [balance, setBalance] = useState(null)
+  const [balanceError, setBalanceError] = useState('')
+  const [loadingBalance, setLoadingBalance] = useState(false)
 
   function createWallet() {
     try {
@@ -61,6 +64,22 @@ function App() {
       setError('')
     } catch {
       setError('Nusxalash ishlamadi. Manzilni bosib ushlab nusxalang.')
+    }
+  }
+
+  async function checkBalance() {
+    try {
+      setLoadingBalance(true)
+      setBalanceError('')
+      const client = new TronWeb({
+        fullHost: 'https://api.shasta.trongrid.io'
+      })
+      const sun = await client.trx.getBalance(wallet.address)
+      setBalance((Number(sun) / 1000000).toFixed(6))
+    } catch (e) {
+      setBalanceError('Balansni olishda xatolik. Internetni tekshiring.')
+    } finally {
+      setLoadingBalance(false)
     }
   }
 
@@ -125,6 +144,12 @@ function App() {
           <h2>Hamyon tasdiqlandi!</h2>
           <p>TRON manzilingiz:</p>
           <p className="address">{wallet.address}</p>
+          <h3>Testnet TRX balansi</h3>
+          <p>{balance === null ? 'Hali tekshirilmagan' : balance + ' TRX'}</p>
+          <button onClick={checkBalance} disabled={loadingBalance}>
+            {loadingBalance ? 'Tekshirilmoqda...' : 'Balansni tekshirish'}
+          </button>
+          {balanceError && <p>{balanceError}</p>}
           <button onClick={() => {
             setShowReceive(!showReceive)
             setCopied(false)
